@@ -1,0 +1,49 @@
+:root{
+  --container: 1100px;
+  --accent: #f6b24a;
+  --accent-dark: #f39c12;
+  --muted: #666;
+}
+
+*{box-sizing:border-box}
+body{font-family:Inter, system-ui, -apple-system, "Segoe UI", Roboto, 'Helvetica Neue', Arial; margin:0; color:#222}
+
+.container{max-width:var(--container);margin:0 auto;padding:0 1.25rem}
+
+.site-header{background:#fff;border-bottom:1px solid rgba(0,0,0,0.06)}
+.header-inner{display:flex;align-items:center;justify-content:space-between;padding:1rem 0}
+.brand{font-weight:700;color:var(--accent-dark);font-size:1.125rem}
+.nav{display:flex;gap:1rem;align-items:center}
+.nav a{color:#333;text-decoration:none;padding:0.35rem 0}
+.btn{font-weight:600;border-radius:8px;padding:0.5rem 0.9rem;border:0;cursor:pointer}
+.btn-ghost{background:transparent;border:1px solid rgba(0,0,0,0.08);padding:0.4rem 0.7rem}
+
+.hero{background:linear-gradient(180deg, #fbdeb1 0%, #f6c66a 100%);padding:3.5rem 0;text-align:center}
+.hero-inner{max-width:900px;margin:0 auto}
+.badge{display:inline-block;background:rgba(255,255,255,0.6);padding:0.35rem 0.8rem;border-radius:999px;font-size:0.85rem;color:#8a4f00;margin-bottom:1rem}
+.hero-title{font-size:2.125rem;margin:0.5rem 0 0.5rem;color:#3b2b1a}
+.hero-sub{color:var(--muted);margin-bottom:1.25rem}
+.hero-cta{display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;margin-top:1.25rem}
+.btn-primary{background:var(--accent-dark);color:#fff;box-shadow:0 10px 25px rgba(243,156,18,0.18)}
+.btn-light{background:#fff;border:1px solid rgba(0,0,0,0.06)}
+
+.features{padding:3rem 0;background:#fff}
+.features h2{text-align:center;margin:0 0 0.25rem}
+.features .muted{text-align:center;color:var(--muted);margin-bottom:1.5rem}
+.features-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem}
+.feature-card{background:#fff;border-radius:10px;padding:1.25rem;border:1px solid rgba(0,0,0,0.04);box-shadow:0 6px 18px rgba(11,11,11,0.03)}
+.feature-card h3{margin-top:0}
+
+.site-footer{padding:1.25rem 0;text-align:center;color:var(--muted);border-top:1px solid rgba(0,0,0,0.04)}
+
+/* Responsive */
+@media(max-width:900px){
+  .hero-title{font-size:1.6rem}
+  .features-grid{grid-template-columns:1fr;}
+  .nav{gap:0.5rem}
+}
+
+@media(max-width:600px){
+  .hero{padding:2rem 0}
+  .brand{font-size:1rem}
+}
