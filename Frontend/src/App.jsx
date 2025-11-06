@@ -1,61 +1,312 @@
 import './App.css'
+import { useState, useEffect } from 'react'
+import ReportForm from './ReportForm'
+import Search from './Search'
+import About from './pages/About'
+import HowItWorks from './pages/HowItWorks'
+import Contact from './pages/Contact'
 
 function App() {
+  const [view, setView] = useState('home') // home | report | search | about | how | contact
+  const [items, setItems] = useState([])
+
+  // toast notification
+  const [toast, setToast] = useState({ show: false, message: '' })
+  function showToast(message, ms = 3000) {
+    setToast({ show: true, message })
+    setTimeout(() => setToast({ show: false, message: '' }), ms)
+  }
+
+  const API = import.meta.env.VITE_API_URL || 'http://localhost:4000'
+
+  // on mount: try to fetch from backend; if backend available, load server items and
+  // migrate any localStorage items to backend. Otherwise fall back to localStorage.
+  useEffect(() => {
+    let mounted = true
+    async function init() {
+      const rawLocal = (() => { try { return JSON.parse(localStorage.getItem('uireturn_items') || '[]') } catch { return [] } })()
+      try {
+        const res = await fetch(`${API}/api/items`)
+        if (!res.ok) throw new Error('backend not ready')
+        const serverItems = await res.json()
+        if (!mounted) return
+        // If server has items, use them. If server empty but local has items, migrate local -> server
+        if ((serverItems?.length || 0) === 0 && (rawLocal?.length || 0) > 0) {
+          // migrate local items to server
+          for (const it of rawLocal) {
+            try {
+              await fetch(`${API}/api/items`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  title: it.title,
+                  description: it.description,
+                  location: it.location,
+                  contact: it.contact,
+                  found: !!it.found
+                })
+              })
+            } catch (err) {
+              console.warn('migration post failed', err)
+            }
+          }
+          showToast('Migrasi data lokal ke server selesai')
+        }
+        // refresh items from server
+        const res2 = await fetch(`${API}/api/items`)
+        if (res2.ok) {
+          const fresh = await res2.json()
+          if (mounted) setItems(fresh)
+          // clear localStorage since server now holds data
+          try { localStorage.removeItem('uireturn_items') } catch {}
+        } else {
+          // fallback to local
+          if (mounted) setItems(rawLocal)
+        }
+      } catch (err) {
+        // backend not reachable, use localStorage
+        if (mounted) {
+          try {
+            const raw = localStorage.getItem('uireturn_items')
+            setItems(raw ? JSON.parse(raw) : [])
+          } catch (e) { setItems([]) }
+        }
+      }
+    }
+    init()
+    return () => { mounted = false }
+  }, [])
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('uireturn_items', JSON.stringify(items))
+    } catch (e) {
+      // ignore storage errors
+    }
+  }, [items])
+
+  function addItem(item) {
+    ;(async () => {
+      // try to POST to backend; if it fails, fall back to local-only
+      try {
+        const res = await fetch(`${API}/api/items`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            title: item.title,
+            description: item.description,
+            location: item.location,
+            contact: item.contact,
+            found: item.found === 'found'
+          })
+        })
+        if (res.ok) {
+          const saved = await res.json()
+          setItems(prev => [saved, ...prev])
+          showToast('Laporan berhasil dikirim ke server ✔')
+        } else {
+          throw new Error('server responded ' + res.status)
+        }
+      } catch (err) {
+        // fallback to local-only
+        const newItem = {
+          id: Date.now(),
+          title: item.title,
+          description: item.description,
+          location: item.location,
+          contact: item.contact,
+          found: item.found === 'found',
+          createdAt: new Date().toISOString(),
+          claimed: false,
+        }
+        setItems(prev => [newItem, ...prev])
+        showToast('Laporan disimpan secara lokal (server tak tersedia)')
+      }
+      setView('search')
+    })()
+  }
+
+  function claimItem(id, claimer) {
+    ;(async () => {
+      try {
+        const res = await fetch(`${API}/api/items/${id}/claim`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ claimer })
+        })
+        if (res.ok) {
+          const updated = await res.json()
+          setItems(prev => prev.map(it => (it.id === updated.id ? updated : it)))
+          showToast('Klaim diterima — terima kasih')
+          return
+        }
+        throw new Error('server claim failed')
+      } catch (err) {
+        // fallback: update locally
+        setItems(prev => prev.map(it => (it.id === id ? { ...it, claimed: true, claimer } : it)))
+        showToast('Klaim dicatat secara lokal (server tak tersedia)')
+      }
+    })()
+  }
+
   return (
-    <div className="site">
-      <header className="site-header">
-        <div className="container header-inner">
-          <div className="brand">UIReturn.id</div>
-          <nav className="nav">
-            <a href="#features">Features</a>
-            <a href="#about">About</a>
-            <button className="btn btn-ghost">Login SSO</button>
+    <div className="min-h-screen bg-gradient-to-b from-white via-accent-light to-white text-slate-900">
+      <header className="bg-white/60 backdrop-blur-sm sticky top-0 z-30 shadow-sm">
+        <div className="container mx-auto px-6 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-accent-dark text-white rounded flex items-center justify-center font-bold">UI</div>
+            <div>
+              <div className="text-lg font-semibold">UIReturn.id</div>
+              <div className="text-xs text-slate-500">Lost & Found — Universitas Indonesia</div>
+            </div>
+          </div>
+
+          <nav className="flex items-center gap-4">
+            <button onClick={() => setView('home')} className={`px-2 py-1 rounded ${view==='home' ? 'bg-accent-light text-accent-dark' : 'text-slate-700 hover:text-accent-dark'}`}>Home</button>
+            <button onClick={() => setView('search')} className={`px-2 py-1 rounded ${view==='search' ? 'bg-accent-light text-accent-dark' : 'text-slate-700 hover:text-accent-dark'}`}>Cari</button>
+            <button onClick={() => setView('report')} className={`px-2 py-1 rounded ${view==='report' ? 'bg-accent-light text-accent-dark' : 'text-slate-700 hover:text-accent-dark'}`}>Laporkan</button>
+            <button onClick={() => setView('how')} className={`px-2 py-1 rounded ${view==='how' ? 'bg-accent-light text-accent-dark' : 'text-slate-700 hover:text-accent-dark'}`}>Cara Kerja</button>
+            <button onClick={() => setView('about')} className={`px-2 py-1 rounded ${view==='about' ? 'bg-accent-light text-accent-dark' : 'text-slate-700 hover:text-accent-dark'}`}>About</button>
+            <button onClick={() => setView('contact')} className="ml-4 px-3 py-2 rounded bg-accent-dark text-white hover:bg-accent transition">Hubungi</button>
           </nav>
         </div>
       </header>
 
-      <main>
-        <section className="hero">
-          <div className="container hero-inner">
-            <span className="badge">Smart Campus Initiative</span>
-            <h1 className="hero-title">Sistem Pencarian Barang Hilang UI</h1>
-            <p className="hero-sub">Platform terpusat untuk melaporkan dan mencari barang hilang di kampus Universitas Indonesia</p>
+      <main className="container mx-auto px-6 py-8">
+        {view === 'home' && (
+          <section className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+            <div className="space-y-4">
+                <span className="inline-block bg-accent-light text-accent-dark px-3 py-1 rounded-full text-sm">Smart Campus Initiative</span>
+                <h1 className="mt-4 text-4xl lg:text-5xl font-extrabold leading-tight">Sistem Pencarian Barang Hilang <span className="text-accent-dark">UI</span></h1>
+                <p className="mt-3 text-slate-600 text-lg">Platform terpusat untuk melaporkan dan mencari barang hilang di lingkungan Universitas Indonesia. Mudah digunakan, aman, dan cepat.</p>
 
-            <div className="hero-cta">
-              <button className="btn btn-primary">Laporkan Barang Hilang</button>
-              <button className="btn btn-light">Cari Barang</button>
+                <div className="mt-6 flex gap-3">
+                  <button onClick={() => setView('report')}
+                    className="px-5 py-3 bg-accent-dark text-white rounded-lg shadow-lg transform hover:-translate-y-0.5 transition">Laporkan Barang</button>
+                  <button onClick={() => setView('search')} className="px-5 py-3 border border-slate-200 rounded-lg">Cari Barang</button>
+                </div>
+
+                <div className="mt-6 bg-gradient-to-r from-white to-[rgba(255,250,240,0.6)] rounded-lg shadow-lg overflow-hidden border border-amber-50">
+                  <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
+                    <div>
+                      <h4 className="font-medium text-lg">Pencarian Cepat</h4>
+                      <p className="text-sm text-slate-600 mt-2">Cari berdasarkan judul, deskripsi, atau lokasi. Gunakan kata kunci seperti ‘dompet’, ‘kunci’, atau nama gedung.</p>
+                      <div className="mt-3">
+                        <input placeholder="Cari berdasarkan judul, deskripsi, lokasi..." onChange={e=>{}} className="w-full p-3 border rounded-md shadow-sm focus:ring-4 focus:ring-accent/30" />
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-center">
+                      {/* Simple illustration */}
+                      <svg width="220" height="120" viewBox="0 0 220 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <rect x="4" y="12" width="212" height="96" rx="12" fill="url(#g)" />
+                        <circle cx="60" cy="60" r="18" fill="#F6B24A" />
+                        <rect x="90" y="46" width="110" height="6" rx="3" fill="#fff" opacity="0.6" />
+                        <rect x="90" y="60" width="80" height="6" rx="3" fill="#fff" opacity="0.5" />
+                        <defs>
+                          <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+                            <stop stop-color="#fff" offset="0"/>
+                            <stop stop-color="#FFFBF5" offset="1"/>
+                          </linearGradient>
+                        </defs>
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+            <div className="flex flex-col gap-4">
+              <div className="bg-white rounded-lg shadow p-6">
+                <h3 className="font-semibold text-lg">Fitur Unggulan</h3>
+                <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="p-3 bg-accent-light rounded">
+                    <div className="font-semibold">Laporkan Cepat</div>
+                    <div className="text-sm text-slate-600 mt-1">Form sederhana untuk mencatat detail barang.</div>
+                  </div>
+                  <div className="p-3 bg-accent-light rounded">
+                    <div className="font-semibold">Pencarian Terpusat</div>
+                    <div className="text-sm text-slate-600 mt-1">Cari berdasarkan judul, deskripsi, lokasi.</div>
+                  </div>
+                  <div className="p-3 bg-accent-light rounded">
+                    <div className="font-semibold">Klaim & Verifikasi</div>
+                    <div className="text-sm text-slate-600 mt-1">Alur klaim dan notifikasi sederhana.</div>
+                  </div>
+                  <div className="p-3 bg-accent-light rounded">
+                    <div className="font-semibold">Aman & Terkelola</div>
+                    <div className="text-sm text-slate-600 mt-1">Data tersimpan dan mudah diaudit.</div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white rounded-lg p-4 border shadow-sm">
+                <h4 className="font-medium">Statistik Singkat</h4>
+                <div className="mt-3 grid grid-cols-3 gap-3 text-center">
+                  <div>
+                    <div className="text-2xl font-bold">{items.length}</div>
+                    <div className="text-xs text-slate-500">Total Laporan</div>
+                  </div>
+                  <div>
+                    <div className="text-2xl font-bold">{items.filter(i=>i.found).length}</div>
+                    <div className="text-xs text-slate-500">Barang Ditemukan</div>
+                  </div>
+                  <div>
+                    <div className="text-2xl font-bold">{items.filter(i=>i.claimed).length}</div>
+                    <div className="text-xs text-slate-500">Sudah Diklaim</div>
+                  </div>
+                </div>
+              </div>
             </div>
-          </div>
-        </section>
+          </section>
+        )}
 
-        <section id="features" className="features">
-          <div className="container">
-            <h2>Fitur Utama</h2>
-            <p className="muted">Sistem yang memudahkan proses lost &amp; found di kampus</p>
-
-            <div className="features-grid">
-              <div className="card feature-card">
-                <h3>Laporkan Cepat</h3>
-                <p>Form sederhana untuk mencatat detail barang hilang atau ditemukan.</p>
-              </div>
-              <div className="card feature-card">
-                <h3>Pencarian Terpusat</h3>
-                <p>Database yang mudah dicari untuk memperbesar kemungkinan menemukan barang.</p>
-              </div>
-              <div className="card feature-card">
-                <h3>Notifikasi & Keamanan</h3>
-                <p>Pemberitahuan untuk pemilik dan admin, serta alur verifikasi yang aman.</p>
-              </div>
+        {view === 'report' && (
+          <section className="mt-6">
+            <h2 className="text-2xl font-semibold mb-4">Laporkan Barang</h2>
+            <div className="bg-white rounded shadow p-6">
+              <ReportForm onSubmit={addItem} onCancel={() => setView('home')} />
             </div>
-          </div>
-        </section>
+          </section>
+        )}
+
+        {view === 'search' && (
+          <section className="mt-6">
+            <h2 className="text-2xl font-semibold mb-4">Cari Barang</h2>
+            <div className="bg-white rounded shadow p-6">
+              <Search items={items} onClaim={claimItem} onReport={() => setView('report')} />
+            </div>
+          </section>
+        )}
+
+        {view === 'about' && (
+          <section className="mt-6">
+            <About />
+          </section>
+        )}
+
+        {view === 'how' && (
+          <section className="mt-6">
+            <HowItWorks />
+          </section>
+        )}
+
+        {view === 'contact' && (
+          <section className="mt-6">
+            <Contact />
+          </section>
+        )}
       </main>
 
-      <footer className="site-footer">
-        <div className="container">
-          <p>© {new Date().getFullYear()} UIReturn.id — Lost & Found System</p>
-        </div>
+      <footer className="bg-white mt-12">
+        <div className="container mx-auto px-6 py-6 text-center text-slate-600">© {new Date().getFullYear()} UIReturn.id — Lost & Found System</div>
       </footer>
+
+      {/* toast */}
+      <div aria-live="polite" className="pointer-events-none fixed inset-0 flex items-start px-4 py-6 sm:items-start sm:p-6 z-50">
+        <div className="w-full flex flex-col items-end">
+          <div className={`max-w-sm w-full bg-white/95 backdrop-blur rounded-lg shadow-lg p-3 transition transform ${toast.show ? 'translate-y-0 opacity-100' : 'translate-y-[-10px] opacity-0'}`}>
+            <div className="text-sm text-slate-800">{toast.message}</div>
+          </div>
+        </div>
+      </div>
     </div>
   )
 }

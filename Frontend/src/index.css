@@ -1,3 +1,7 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 :root {
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
@@ -30,6 +34,17 @@ body {
      The landing styles in `App.css` will align/center content as needed. */
 }
 
+/* Import Inter font for nicer typography (fallback used if blocked) */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap');
+
+html, body, #root { height: 100%; }
+
+/* small utility to make accents slightly more vivid */
+.accent-glow { box-shadow: 0 6px 24px rgba(243,156,18,0.12); }
+
+/* Accent focus ring utility */
+.focus-accent:focus { box-shadow: 0 6px 18px rgba(246,178,74,0.18); border-color: rgba(246,178,74,0.9); }
+
 h1 {
   font-size: 3.2em;
   line-height: 1.1;
@@ -42,7 +57,7 @@ button {
   font-size: 1em;
   font-weight: 500;
   font-family: inherit;
-  background-color: #1a1a1a;
+  background-color: transparent; /* use Tailwind classes or component styles instead */
   cursor: pointer;
   transition: border-color 0.25s;
 }

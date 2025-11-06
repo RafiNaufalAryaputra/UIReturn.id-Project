@@ -1,0 +1,37 @@
+{
+  "items": [
+    {
+      "id": "MeHIhCgXOXsmt2V3pStNu",
+      "title": "IPAD",
+      "description": "putih",
+      "location": "kantin atas",
+      "contact": "Ahmad",
+      "found": true,
+      "createdAt": "2025-11-05T13:38:54.757Z",
+      "claimed": true,
+      "claimer": "Ahmad"
+    },
+    {
+      "id": "kYQujlCiEi1dPB5wUEzaR",
+      "title": "IPAd",
+      "description": "putih",
+      "location": "kantin atas teknik",
+      "contact": "Daffa",
+      "found": false,
+      "createdAt": "2025-11-05T13:38:26.777Z",
+      "claimed": true,
+      "claimer": "Ahmad"
+    },
+    {
+      "id": "ag-RMqTNrJqX5BDks6y0b",
+      "title": "Dompet hitam",
+      "description": "ada ktp atas nama Ahmad",
+      "location": "Perpustakaan lantai 1",
+      "contact": "Rafi",
+      "found": false,
+      "createdAt": "2025-11-05T13:37:04.923Z",
+      "claimed": false,
+      "claimer": null
+    }
+  ]
+}
