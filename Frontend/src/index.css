@@ -31,7 +31,10 @@ body {
   min-width: 320px;
   min-height: 100vh;
   /* Use normal document flow for full-page layouts (header/hero/footer).
-     The landing styles in `App.css` will align/center content as needed. */
+     Ensure a white page background and high-contrast text by default so
+     Tailwind/App styles don't accidentally render unreadable text. */
+  background-color: #ffffff;
+  color: #0f172a; /* slate-900 */
 }
 
 /* Import Inter font for nicer typography (fallback used if blocked) */

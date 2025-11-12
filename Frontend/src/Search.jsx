@@ -67,23 +67,26 @@ export default function Search({ items, onClaim, onReport }) {
 
   return (
     <div>
-      <div className="mb-4 grid grid-cols-1 md:grid-cols-4 gap-3 items-center">
+  <div className="mb-4 grid grid-cols-1 md:grid-cols-6 gap-3 items-center">
+        {/* Search input: full width on small, spans 2 cols on md+ */}
         <input
-          placeholder="Cari berdasarkan judul, deskripsi, atau lokasi..."
+          placeholder="Cari sesuai judul, deskripsi, atau lokasi..."
           value={q}
           onChange={e => setQ(e.target.value)}
-          className="col-span-2 w-full p-3 border rounded"
+          className="col-span-full md:col-span-2 w-full p-2 border rounded-lg shadow-sm h-10 focus:ring-4 focus:ring-accent/30 focus:bg-accent-dark focus:text-white placeholder-slate-400 focus:placeholder-white"
         />
 
-        <div className="flex gap-2 items-center">
-          <button onClick={() => setFilter('all')} className={`px-3 py-2 rounded ${filter==='all'?'bg-accent-dark text-white':'border'}`}>Semua</button>
-          <button onClick={() => setFilter('lost')} className={`px-3 py-2 rounded ${filter==='lost'?'bg-accent-dark text-white':'border'}`}>Hilang</button>
-          <button onClick={() => setFilter('found')} className={`px-3 py-2 rounded ${filter==='found'?'bg-accent-dark text-white':'border'}`}>Ditemukan</button>
-          <button onClick={() => setFilter('claimed')} className={`px-3 py-2 rounded ${filter==='claimed'?'bg-accent-dark text-white':'border'}`}>Sudah Klaim</button>
+        {/* Filter buttons: full width on small, single column on md */}
+        <div className="col-span-full md:col-span-3 flex gap-2 items-center">
+          <button onClick={() => setFilter('all')} className={`px-2 py-1 rounded ${filter==='all'?'bg-accent-dark text-white':'border'}`}>Semua</button>
+          <button onClick={() => setFilter('lost')} className={`px-2 py-1 rounded ${filter==='lost'?'bg-accent-dark text-white':'border'}`}>Hilang</button>
+          <button onClick={() => setFilter('found')} className={`px-2 py-1 rounded ${filter==='found'?'bg-accent-dark text-white':'border'}`}>Ditemukan</button>
+          <button onClick={() => setFilter('claimed')} className={`px-2 py-1 rounded ${filter==='claimed'?'bg-accent-dark text-white':'border'}`}>Sudah Klaim</button>
         </div>
 
-        <div className="flex items-center gap-2 justify-end">
-          <select value={sort} onChange={e=>setSort(e.target.value)} className="p-2 border rounded">
+        {/* Sort + report: full width on small, align right on md */}
+        <div className="col-span-full md:col-span-1 flex items-center gap-2 justify-end">
+          <select value={sort} onChange={e=>setSort(e.target.value)} className="p-2 border rounded-lg shadow-sm h-10 focus:ring-1 focus:ring-accent/30 focus:bg-accent-dark focus:text-white">
             <option value="newest">Terbaru</option>
             <option value="oldest">Terlama</option>
           </select>

@@ -5,6 +5,8 @@ import Search from './Search'
 import About from './pages/About'
 import HowItWorks from './pages/HowItWorks'
 import Contact from './pages/Contact'
+import Header from './components/Header'
+import Footer from './components/Footer'
 
 function App() {
   const [view, setView] = useState('home') // home | report | search | about | how | contact
@@ -150,34 +152,14 @@ function App() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white via-accent-light to-white text-slate-900">
-      <header className="bg-white/60 backdrop-blur-sm sticky top-0 z-30 shadow-sm">
-        <div className="container mx-auto px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-accent-dark text-white rounded flex items-center justify-center font-bold">UI</div>
-            <div>
-              <div className="text-lg font-semibold">UIReturn.id</div>
-              <div className="text-xs text-slate-500">Lost & Found — Universitas Indonesia</div>
-            </div>
-          </div>
+    <div className="min-h-screen flex flex-col bg-gradient-to-b from-white via-accent-light to-white text-slate-900">
+      <Header view={view} setView={setView} />
 
-          <nav className="flex items-center gap-4">
-            <button onClick={() => setView('home')} className={`px-2 py-1 rounded ${view==='home' ? 'bg-accent-light text-accent-dark' : 'text-slate-700 hover:text-accent-dark'}`}>Home</button>
-            <button onClick={() => setView('search')} className={`px-2 py-1 rounded ${view==='search' ? 'bg-accent-light text-accent-dark' : 'text-slate-700 hover:text-accent-dark'}`}>Cari</button>
-            <button onClick={() => setView('report')} className={`px-2 py-1 rounded ${view==='report' ? 'bg-accent-light text-accent-dark' : 'text-slate-700 hover:text-accent-dark'}`}>Laporkan</button>
-            <button onClick={() => setView('how')} className={`px-2 py-1 rounded ${view==='how' ? 'bg-accent-light text-accent-dark' : 'text-slate-700 hover:text-accent-dark'}`}>Cara Kerja</button>
-            <button onClick={() => setView('about')} className={`px-2 py-1 rounded ${view==='about' ? 'bg-accent-light text-accent-dark' : 'text-slate-700 hover:text-accent-dark'}`}>About</button>
-            <button onClick={() => setView('contact')} className="ml-4 px-3 py-2 rounded bg-accent-dark text-white hover:bg-accent transition">Hubungi</button>
-          </nav>
-        </div>
-      </header>
-
-      <main className="container mx-auto px-6 py-8">
+  <main className="container mx-auto px-6 py-8 flex-1">
         {view === 'home' && (
           <section className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
-            <div className="space-y-4">
-                <span className="inline-block bg-accent-light text-accent-dark px-3 py-1 rounded-full text-sm">Smart Campus Initiative</span>
-                <h1 className="mt-4 text-4xl lg:text-5xl font-extrabold leading-tight">Sistem Pencarian Barang Hilang <span className="text-accent-dark">UI</span></h1>
+            <div className="space-y-6">
+                <h1 className="mt-7 text-4xl lg:text-5xl font-extrabold leading-tight">Sistem Pencarian Barang Hilang <span className="text-accent-dark">UI</span></h1>
                 <p className="mt-3 text-slate-600 text-lg">Platform terpusat untuk melaporkan dan mencari barang hilang di lingkungan Universitas Indonesia. Mudah digunakan, aman, dan cepat.</p>
 
                 <div className="mt-6 flex gap-3">
@@ -192,23 +174,21 @@ function App() {
                       <h4 className="font-medium text-lg">Pencarian Cepat</h4>
                       <p className="text-sm text-slate-600 mt-2">Cari berdasarkan judul, deskripsi, atau lokasi. Gunakan kata kunci seperti ‘dompet’, ‘kunci’, atau nama gedung.</p>
                       <div className="mt-3">
-                        <input placeholder="Cari berdasarkan judul, deskripsi, lokasi..." onChange={e=>{}} className="w-full p-3 border rounded-md shadow-sm focus:ring-4 focus:ring-accent/30" />
+                        <input placeholder="Cari berdasarkan judul, deskripsi, lokasi..." onChange={e=>{}} className="mt-2 p-3 border rounded-lg shadow-sm focus:ring-4 focus:ring-accent/30 focus:bg-accent-dark focus:text-white placeholder-slate-400 focus:placeholder-white" />
                       </div>
                     </div>
                     <div className="flex items-center justify-center">
-                      {/* Simple illustration */}
-                      <svg width="220" height="120" viewBox="0 0 220 120" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <rect x="4" y="12" width="212" height="96" rx="12" fill="url(#g)" />
-                        <circle cx="60" cy="60" r="18" fill="#F6B24A" />
-                        <rect x="90" y="46" width="110" height="6" rx="3" fill="#fff" opacity="0.6" />
-                        <rect x="90" y="60" width="80" height="6" rx="3" fill="#fff" opacity="0.5" />
-                        <defs>
-                          <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
-                            <stop stop-color="#fff" offset="0"/>
-                            <stop stop-color="#FFFBF5" offset="1"/>
-                          </linearGradient>
-                        </defs>
-                      </svg>
+                      <div className="illustration">
+                        <div className="illus-card">
+                          <div className="illus-header">Laporan terbaru</div>
+                          <ul className="illus-list">
+                            <li><span className="illus-dot"/>Dompet — Fakultas Teknik</li>
+                            <li><span className="illus-dot"/>Payung — Perpustakaan</li>
+                            <li><span className="illus-dot"/>Kunci motor — Parkiran Selatan</li>
+                          </ul>
+                          <div className="illus-foot">Lebih dari <strong>{items.length}</strong> laporan</div>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -295,9 +275,7 @@ function App() {
         )}
       </main>
 
-      <footer className="bg-white mt-12">
-        <div className="container mx-auto px-6 py-6 text-center text-slate-600">© {new Date().getFullYear()} UIReturn.id — Lost & Found System</div>
-      </footer>
+      <Footer />
 
       {/* toast */}
       <div aria-live="polite" className="pointer-events-none fixed inset-0 flex items-start px-4 py-6 sm:items-start sm:p-6 z-50">
