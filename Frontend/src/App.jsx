@@ -45,7 +45,8 @@ function App() {
                   description: it.description,
                   location: it.location,
                   contact: it.contact,
-                  found: !!it.found
+                    found: !!it.found,
+                    imageData: it.imageData || null
                 })
               })
             } catch (err) {
@@ -99,7 +100,8 @@ function App() {
             description: item.description,
             location: item.location,
             contact: item.contact,
-            found: item.found === 'found'
+            found: item.found === 'found',
+            imageData: item.imageData || null
           })
         })
         if (res.ok) {
@@ -118,6 +120,7 @@ function App() {
           location: item.location,
           contact: item.contact,
           found: item.found === 'found',
+          imageData: item.imageData || null,
           createdAt: new Date().toISOString(),
           claimed: false,
         }

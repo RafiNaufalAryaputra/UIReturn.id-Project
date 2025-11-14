@@ -29,7 +29,7 @@ router.get('/:id', async (req, res) => {
 
 // POST /api/items
 router.post('/', async (req, res) => {
-  const { title, description = '', location = '', contact = '', found = false } = req.body
+  const { title, description = '', location = '', contact = '', found = false, imageData = null } = req.body
   if (!title) return res.status(400).json({ error: 'title required' })
   const item = {
     id: nanoid(),
@@ -38,6 +38,8 @@ router.post('/', async (req, res) => {
     location,
     contact,
     found: !!found,
+    // optional base64 data URL of an uploaded image (string) - nullable
+    imageData: imageData || null,
     createdAt: new Date().toISOString(),
     claimed: false,
     claimer: null

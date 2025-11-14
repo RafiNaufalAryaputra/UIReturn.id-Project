@@ -6,11 +6,12 @@ export default function ReportForm({ onSubmit, onCancel }) {
   const [location, setLocation] = useState('')
   const [contact, setContact] = useState('')
   const [found, setFound] = useState('lost') // 'lost' or 'found'
+  const [imageData, setImageData] = useState(null)
 
   function handleSubmit(e) {
     e.preventDefault()
     if (!title.trim()) return alert('Judul wajib diisi')
-    onSubmit({ title, description, location, contact, found })
+    onSubmit({ title, description, location, contact, found, imageData })
     // reset
     setTitle('')
     setDescription('')
@@ -53,11 +54,34 @@ export default function ReportForm({ onSubmit, onCancel }) {
         </label>
       </div>
 
-      <div className="flex gap-3 items-center">
-        <button type="submit" className="px-4 py-2 bg-accent-dark text-white rounded-lg shadow-lg hover:brightness-95 transition">Kirim Laporan</button>
-        <button type="button" onClick={onCancel} className="px-4 py-2 border rounded-lg">Batal</button>
-        <div className="ml-auto text-sm text-slate-500">Pastikan informasi benar sebelum submit.</div>
+      <label className="flex flex-col">
+        <span className="text-sm text-slate-600 font-medium">Foto (opsional)</span>
+        <input type="file" accept="image/*" onChange={async e => {
+          const f = e.target.files && e.target.files[0]
+          if (!f) { setImageData(null); return }
+          // limit size to ~3.5MB to avoid huge base64 strings
+          if (f.size > 3500000) return alert('Ukuran file terlalu besar (maks ~3.5MB)')
+          const reader = new FileReader()
+          reader.onload = () => setImageData(reader.result)
+          reader.readAsDataURL(f)
+        }} className="mt-2" />
+        {imageData && (
+          <div className="mt-3 flex items-center gap-4">
+            <img src={imageData} alt="preview" className="w-28 h-20 object-cover rounded-md border" />
+            <div className="flex flex-col">
+              <span className="text-sm text-slate-600">Preview foto</span>
+              <button type="button" onClick={() => setImageData(null)} className="mt-2 text-sm text-rose-600 hover:underline">Hapus foto</button>
+            </div>
+          </div>
+        )}
+
+      </label>
+
+      <div className="flex items-center gap-3 justify-end pt-4">
+        <button type="button" onClick={onCancel} className="px-4 py-2 rounded-md text-sm bg-gray-100 hover:bg-gray-200">Batal</button>
+        <button type="submit" className="px-4 py-2 rounded-md bg-amber-500 text-white hover:bg-amber-600">Kirim Laporan</button>
       </div>
+
     </form>
   )
 }
