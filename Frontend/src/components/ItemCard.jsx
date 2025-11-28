@@ -1,6 +1,6 @@
-export default function ItemCard({ item, onClaimClick }) {
+export default function ItemCard({ item, onClaimClick, onViewClick }) {
   return (
-    <div className="flex flex-col sm:flex-row items-start justify-between p-4 bg-white border border-gray-100 rounded-xl shadow-sm hover:shadow-md transition-transform transform hover:-translate-y-1">
+    <div onClick={() => onViewClick && onViewClick(item)} className="flex flex-col sm:flex-row items-start justify-between p-4 bg-white border border-gray-100 rounded-xl shadow-sm hover:shadow-md transition-transform transform hover:-translate-y-1 cursor-pointer">
       <div className="flex gap-4 w-full">
         <div className="w-24 h-24 rounded-lg bg-accent-light flex items-center justify-center text-accent-dark font-semibold text-2xl flex-shrink-0 overflow-hidden shadow-sm">
           {item.imageData ? (
@@ -32,7 +32,7 @@ export default function ItemCard({ item, onClaimClick }) {
         {!item.claimed ? (
           <button
             className="px-4 py-2 bg-accent-dark text-white rounded-lg shadow-md hover:brightness-95 transition"
-            onClick={() => onClaimClick && onClaimClick(item)}
+            onClick={(e) => { e.stopPropagation(); onClaimClick && onClaimClick(item) }}
           >
             Klaim
           </button>

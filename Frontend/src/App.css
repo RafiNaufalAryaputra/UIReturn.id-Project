@@ -1,5 +1,5 @@
 :root{
-  --container: 1100px;
+  --container: 1300px;
   --accent: #f6b24a;
   --accent-dark: #f39c12;
   --muted: #666;
@@ -81,11 +81,13 @@ input, textarea, select, .p-3 {
   transition: background-color .18s ease, color .18s ease, box-shadow .18s ease, border-color .18s ease;
 }
 
+/* On focus: highlight with a subtle border/glow but keep white background
+   so select dropdowns and inputs do not turn yellow/orange when active. */
 input:focus, textarea:focus, select:focus, .p-3:focus {
-  background-color: var(--accent-dark);
-  color: #ffffff;
-  border-color: rgba(0,0,0,0.06);
-  box-shadow: 0 6px 18px rgba(243,156,18,0.12) inset;
+  background-color: #ffffff;
+  color: #0f172a;
+  border-color: rgba(246,178,74,0.45); /* amber-ish border */
+  box-shadow: 0 6px 18px rgba(243,156,18,0.06) inset, 0 0 0 4px rgba(246,178,74,0.06);
 }
 
 /* placeholder should remain readable when input is focused */
@@ -94,6 +96,20 @@ input:focus::placeholder, textarea:focus::placeholder {
 }
 
 /* Ensure default placeholder remains muted when not focused */
+input::placeholder, textarea::placeholder { color: rgba(74,85,104,0.45); }
+
+/* Make inputs use a light background and dark text by default.
+   Targets form controls that use the Tailwind padding utility `p-3`
+   (used in components) while avoiding global side-effects on other
+   elements. This overrides the earlier focus styles so inputs are
+   readable when not focused. */
+input, textarea, select, input.p-3, textarea.p-3, select.p-3 {
+  background-color: #ffffff;
+  color: #0f172a; /* slate-900 */
+  border: 1px solid rgba(15,23,42,0.06);
+}
+
+/* keep placeholder muted when not focused */
 input::placeholder, textarea::placeholder { color: rgba(74,85,104,0.45); }
 
 /* subtle entrance animation for hero */

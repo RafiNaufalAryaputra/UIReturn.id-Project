@@ -1,5 +1,7 @@
 import { useState } from 'react'
 import ItemCard from './components/ItemCard'
+import ItemsTable from './components/ItemsTable'
+import ItemDrawer from './components/ItemDrawer'
 
 export default function Search({ items, onClaim, onReport }) {
   const [q, setQ] = useState('')
@@ -35,6 +37,8 @@ export default function Search({ items, onClaim, onReport }) {
   const [step, setStep] = useState(1) // 1: form, 2: review, 3: done
   const [agree, setAgree] = useState(false)
   const [submitting, setSubmitting] = useState(false)
+
+  const [detailItem, setDetailItem] = useState(null)
 
   function submitClaim() {
     if (!selected) return
@@ -96,14 +100,28 @@ export default function Search({ items, onClaim, onReport }) {
 
       <div className="mb-3 text-sm text-slate-600">Menampilkan <strong>{filtered.length}</strong> hasil</div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+      {/* Table view on medium+ screens */}
+      <div className="hidden md:block">
+        {filtered.length === 0 ? (
+          <div className="p-6 text-center text-slate-600 bg-white rounded shadow">Tidak ada hasil. Coba kata kunci lain atau buat laporan.</div>
+        ) : (
+          <ItemsTable items={filtered} onClaimClick={openClaim} onRowClick={setDetailItem} />
+        )}
+      </div>
+
+      {/* Card/list view on small screens */}
+      <div className="md:hidden grid grid-cols-1 gap-3">
         {filtered.length === 0 && (
           <div className="p-6 text-center text-slate-600 bg-white rounded shadow col-span-full">Tidak ada hasil. Coba kata kunci lain atau buat laporan.</div>
         )}
         {filtered.map(item => (
-          <ItemCard key={item.id} item={item} onClaimClick={openClaim} />
+          <ItemCard key={item.id} item={item} onClaimClick={openClaim} onViewClick={setDetailItem} />
         ))}
       </div>
+
+      {detailItem && (
+        <ItemDrawer item={detailItem} onClose={() => setDetailItem(null)} onClaim={(it) => { setDetailItem(null); openClaim(it) }} />
+      )}
 
       {/* Claim modal */}
       {selected && (

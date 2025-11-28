@@ -53,8 +53,8 @@
       "contact": "Rafi",
       "found": false,
       "createdAt": "2025-11-05T13:37:04.923Z",
-      "claimed": false,
-      "claimer": null
+      "claimed": true,
+      "claimer": "pentol"
     }
   ]
 }
