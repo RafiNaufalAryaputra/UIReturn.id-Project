@@ -1,15 +1,12 @@
 import React from 'react'
 
-export default function Header({ view, setView }) {
+export default function Header({ view, setView, user, onLogout }) {
   return (
     <header className="bg-white/60 backdrop-blur-sm sticky top-0 z-30 shadow-sm">
       <div className="container mx-auto px-6 py-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="logo-mark" aria-hidden>
-            <svg width="40" height="40" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <rect width="48" height="48" rx="10" fill="#F39C12" />
-              <path d="M14 30V18h6l6 12v-12h6v12" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
+            <img src="/logo.png" alt="UIReturn.id" className="w-10 h-10 object-cover rounded-md" />
           </div>
           <div>
             <div className="text-lg font-semibold">UIReturn.id</div>
@@ -24,6 +21,14 @@ export default function Header({ view, setView }) {
           <button onClick={() => setView('how')} className={`px-2 py-1 rounded ${view==='how' ? 'bg-accent-light text-accent-dark' : 'text-slate-700 hover:text-accent-dark'}`}>Cara Kerja</button>
           <button onClick={() => setView('about')} className={`px-2 py-1 rounded ${view==='about' ? 'bg-accent-light text-accent-dark' : 'text-slate-700 hover:text-accent-dark'}`}>About</button>
           <button onClick={() => setView('contact')} className="ml-4 px-3 py-2 rounded bg-accent-dark text-white hover:bg-accent transition">Hubungi</button>
+          {user ? (
+            <div className="flex items-center gap-3 ml-4">
+              <div className="text-sm">Halo, <strong>{user.name || user.email}</strong></div>
+              <button onClick={() => { onLogout && onLogout() }} className="px-3 py-1 rounded border">Logout</button>
+            </div>
+          ) : (
+            <button onClick={() => setView('login')} className="ml-4 px-3 py-2 rounded bg-accent-dark text-white hover:bg-accent transition">Masuk</button>
+          )}
         </nav>
       </div>
     </header>

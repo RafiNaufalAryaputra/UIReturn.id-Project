@@ -6,6 +6,8 @@ import About from './pages/About'
 import HowItWorks from './pages/HowItWorks'
 import Contact from './pages/Contact'
 import Header from './components/Header'
+import Login from './Login'
+import Register from './Register'
 import Footer from './components/Footer'
 
 function App() {
@@ -19,7 +21,34 @@ function App() {
     setTimeout(() => setToast({ show: false, message: '' }), ms)
   }
 
-  const API = import.meta.env.VITE_API_URL || 'http://localhost:4000'
+  const API = import.meta.env.VITE_API || 'http://localhost:3000'
+
+  // auth
+  const [token, setToken] = useState(null)
+  const [user, setUser] = useState(null)
+
+  useEffect(() => {
+    try {
+      const t = localStorage.getItem('token')
+      const u = localStorage.getItem('user')
+      if (t) setToken(t)
+      if (u) setUser(JSON.parse(u))
+    } catch (e) {}
+  }, [])
+
+  function handleLogin(t, u) {
+    try { localStorage.setItem('token', t); localStorage.setItem('user', JSON.stringify(u)) } catch (e) {}
+    setToken(t)
+    setUser(u)
+    setView('home')
+  }
+
+  function handleLogout() {
+    try { localStorage.removeItem('token'); localStorage.removeItem('user') } catch (e) {}
+    setToken(null)
+    setUser(null)
+    setView('home')
+  }
 
   // on mount: try to fetch from backend; if backend available, load server items and
   // migrate any localStorage items to backend. Otherwise fall back to localStorage.
@@ -156,7 +185,7 @@ function App() {
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-white via-accent-light to-white text-slate-900">
-      <Header view={view} setView={setView} />
+      <Header view={view} setView={setView} user={user} onLogout={handleLogout} />
 
   <main className="container mx-auto px-6 py-8 flex-1">
         {view === 'home' && (
@@ -256,6 +285,18 @@ function App() {
             <div className="bg-white rounded shadow p-6">
               <Search items={items} onClaim={claimItem} onReport={() => setView('report')} />
             </div>
+          </section>
+        )}
+
+        {view === 'login' && (
+          <section className="mt-6">
+            <Login onLogin={handleLogin} onGotoRegister={() => setView('register')} />
+          </section>
+        )}
+
+        {view === 'register' && (
+          <section className="mt-6">
+            <Register onRegistered={() => setView('login')} onGotoLogin={() => setView('login')} />
           </section>
         )}
 

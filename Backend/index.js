@@ -1,27 +1,29 @@
 import express from 'express'
 import cors from 'cors'
-import itemsRouter from './routes/items.js'
-import { join, dirname } from 'path'
-import fs from 'fs/promises'
-import { fileURLToPath } from 'url'
+import dotenv from 'dotenv'
+import mongo from './mongo.js'
+import itemsRouter from './items.js'
+import usersRouter from './users.js'
+
+dotenv.config()
 
 const app = express()
 app.use(cors())
-app.use(express.json())
-
-// Determine directory of this file (robust even if process.cwd differs)
-const __dirname = dirname(fileURLToPath(import.meta.url))
-// base directory for backend files (the folder where this index.js lives)
-const backendDir = __dirname
-const dbPath = join(backendDir, 'db.json')
-
-// ensure db file exists in the same folder as this file
-await fs.mkdir(backendDir, { recursive: true })
-try { await fs.access(dbPath) } catch { await fs.writeFile(dbPath, JSON.stringify({ items: [] }, null, 2)) }
+app.use(express.json({ limit: '5mb' }))
 
 app.use('/api/items', itemsRouter)
+app.use('/api/users', usersRouter)
 
-app.get('/', (req, res) => res.json({ ok: true, message: 'UIReturn backend' }))
+const PORT = process.env.PORT || 3000
 
-const port = process.env.PORT || 4000
-app.listen(port, () => console.log(`Backend listening on http://localhost:${port}`))
+async function start() {
+	try {
+		await mongo.connect()
+		app.listen(PORT, () => console.log(`[backend] listening on http://localhost:${PORT}`))
+	} catch (err) {
+		console.error('Failed to start server', err)
+		process.exit(1)
+	}
+}
+
+start()
