@@ -189,43 +189,9 @@ function App() {
 
   <main className="container mx-auto px-6 py-8 flex-1">
         {view === 'home' && (
-          <section className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
-            <div className="space-y-6">
-                <h1 className="mt-7 text-4xl lg:text-5xl font-extrabold leading-tight">Sistem Pencarian Barang Hilang <span className="text-accent-dark">UI</span></h1>
-                <p className="mt-3 text-slate-600 text-lg">Platform terpusat untuk melaporkan dan mencari barang hilang di lingkungan Universitas Indonesia. Mudah digunakan, aman, dan cepat.</p>
-
-                <div className="mt-6 flex gap-3">
-                  <button onClick={() => setView('report')}
-                    className="px-5 py-3 bg-accent-dark text-white rounded-lg shadow-lg transform hover:-translate-y-0.5 transition">Laporkan Barang</button>
-                  <button onClick={() => setView('search')} className="px-5 py-3 border border-slate-200 rounded-lg">Cari Barang</button>
-                </div>
-
-                <div className="mt-6 bg-gradient-to-r from-white to-[rgba(255,250,240,0.6)] rounded-lg shadow-lg overflow-hidden border border-amber-50">
-                  <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
-                    <div>
-                      <h4 className="font-medium text-lg">Pencarian Cepat</h4>
-                      <p className="text-sm text-slate-600 mt-2">Cari berdasarkan judul, deskripsi, atau lokasi. Gunakan kata kunci seperti ‘dompet’, ‘kunci’, atau nama gedung.</p>
-                      <div className="mt-3">
-                        <input placeholder="Cari berdasarkan judul, deskripsi, lokasi..." onChange={e=>{}} className="mt-2 p-3 border rounded-lg shadow-sm focus:ring-4 focus:ring-accent/30 focus:bg-accent-dark focus:text-white placeholder-slate-400 focus:placeholder-white" />
-                      </div>
-                    </div>
-                    <div className="flex items-center justify-center">
-                      <div className="illustration">
-                        <div className="illus-card">
-                          <div className="illus-header">Laporan terbaru</div>
-                          <ul className="illus-list">
-                            <li><span className="illus-dot"/>Dompet — Fakultas Teknik</li>
-                            <li><span className="illus-dot"/>Payung — Perpustakaan</li>
-                            <li><span className="illus-dot"/>Kunci motor — Parkiran Selatan</li>
-                          </ul>
-                          <div className="illus-foot">Lebih dari <strong>{items.length}</strong> laporan</div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
+          <section className="grid grid-cols-1 gap-8 items-center">
+            <h2 className="text-3xl font-semibold mb-4">Selamat Datang di UIReturn.id</h2>
+            <p className="text-slate-700">Platform Lost & Found resmi untuk komunitas Universitas Indonesia. Laporkan barang hilang atau temukan barang yang ditemukan oleh orang lain dengan mudah dan cepat.</p>
             <div className="flex flex-col gap-4">
               <div className="bg-white rounded-lg shadow p-6">
                 <h3 className="font-semibold text-lg">Fitur Unggulan</h3>
@@ -267,6 +233,11 @@ function App() {
                 </div>
               </div>
             </div>
+                            <div className="mt-6 flex gap-3">
+                  <button onClick={() => setView('report')}
+                    className="px-5 py-3 bg-accent-dark text-white rounded-lg shadow-lg transform hover:-translate-y-0.5 transition">Laporkan Barang</button>
+                  <button onClick={() => setView('search')} className="px-5 py-3 border border-slate-200 rounded-lg">Cari Barang</button>
+                </div>
           </section>
         )}
 

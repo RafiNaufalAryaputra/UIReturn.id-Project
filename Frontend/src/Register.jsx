@@ -22,7 +22,7 @@ export default function Register({ onRegistered, onGotoLogin }) {
 
   return (
     <div className="max-w-md mx-auto">
-      <h3 className="text-xl font-semibold mb-4">Daftar</h3>
+      <h3 className="text-xl font-semibold mb-4">Register</h3>
       <form onSubmit={submit} className="space-y-3 bg-white p-4 rounded shadow">
         <div>
           <label className="text-sm">Nama</label>
@@ -38,8 +38,8 @@ export default function Register({ onRegistered, onGotoLogin }) {
         </div>
         {err && <div className="text-sm text-red-600">{err}</div>}
         <div className="flex gap-2">
-          <button className="px-4 py-2 bg-accent-dark text-white rounded">Daftar</button>
-          <button type="button" onClick={onGotoLogin} className="px-4 py-2 border rounded">Masuk</button>
+          <button className="px-4 py-2 bg-accent-dark text-white rounded">Register</button>
+          <button type="button" onClick={onGotoLogin} className="px-4 py-2 border rounded">Login</button>
         </div>
       </form>
     </div>
