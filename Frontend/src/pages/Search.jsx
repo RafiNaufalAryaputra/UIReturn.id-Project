@@ -77,7 +77,8 @@ export default function Search({ items, onClaim, onReport }) {
           placeholder="Cari sesuai judul, deskripsi, atau lokasi..."
           value={q}
           onChange={e => setQ(e.target.value)}
-          className="col-span-full md:col-span-2 w-full p-2 border rounded-lg shadow-sm h-10 focus:ring-4 focus:ring-accent/30 focus:bg-accent-dark focus:text-white placeholder-slate-400 focus:placeholder-white"
+          className="col-span-full md:col-span-2 mt-2 p-3 border rounded-lg shadow-sm focus:ring-4 focus:ring-accent/30 focus:bg-accent-dark focus:text-white placeholder-slate-400 focus:placeholder-white"
+          
         />
 
         {/* Filter buttons: full width on small, single column on md */}
@@ -90,7 +91,7 @@ export default function Search({ items, onClaim, onReport }) {
 
         {/* Sort + report: full width on small, align right on md */}
         <div className="col-span-full md:col-span-1 flex items-center gap-2 justify-end">
-          <select value={sort} onChange={e=>setSort(e.target.value)} className="p-2 border rounded-lg shadow-sm h-10 focus:ring-1 focus:ring-accent/30 focus:bg-accent-dark focus:text-white">
+          <select value={sort} onChange={e=>setSort(e.target.value)} className="p-3 border rounded-lg shadow-sm focus:ring-1 focus:ring-accent/30 focus:bg-accent-dark focus:text-white">
             <option value="newest">Terbaru</option>
             <option value="oldest">Terlama</option>
           </select>

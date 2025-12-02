@@ -187,65 +187,132 @@ function App() {
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-white via-accent-light to-white text-slate-900">
       <Header view={view} setView={setView} user={user} onLogout={handleLogout} />
 
-  <main className="container mx-auto px-6 py-8 flex-1">
+  <main className="max-w-screen-lg mx-auto px-8 py-10 flex-1">
         {view === 'home' && (
-          <section className="grid grid-cols-1 gap-8 items-center">
-            <h2 className="text-3xl font-semibold mb-4">Selamat Datang di UIReturn.id</h2>
-            <p className="text-slate-700">Platform Lost & Found resmi untuk komunitas Universitas Indonesia. Laporkan barang hilang atau temukan barang yang ditemukan oleh orang lain dengan mudah dan cepat.</p>
-            <div className="flex flex-col gap-4">
-              <div className="bg-white rounded-lg shadow p-6">
-                <h3 className="font-semibold text-lg">Fitur Unggulan</h3>
-                <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div className="p-3 bg-accent-light rounded">
-                    <div className="font-semibold">Laporkan Cepat</div>
-                    <div className="text-sm text-slate-600 mt-1">Form sederhana untuk mencatat detail barang.</div>
+          <section className="space-y-10">
+            {/* Hero */}
+            <div className="bg-gradient-to-b from-white via-accent-light to-white rounded-xl p-10 shadow-lg">
+              <div className="max-w-screen-lg mx-auto flex flex-col md:flex-row items-center gap-8">
+                <div className="flex-1 text-center md:text-left">
+                  <h1 className="text-4xl lg:text-5xl font-extrabold leading-tight">Selamat Datang di <span className="text-amber-600">UIReturn.id</span></h1>
+                  <p className="mt-3 text-slate-600 text-base lg:text-lg max-w-2xl">Platform Lost & Found resmi untuk komunitas Universitas Indonesia. Laporkan barang hilang atau temukan barang dengan mudah dan aman.</p>
+                  <div className="mt-5 flex justify-center md:justify-start gap-3">
+                    <button onClick={() => setView('report')} className="px-6 py-3 bg-amber-500 hover:bg-amber-600 text-white rounded-lg shadow transition">Laporkan Barang</button>
+                    <button onClick={() => setView('search')} className="px-5 py-3 border rounded-lg bg-white">Cari Barang</button>
                   </div>
-                  <div className="p-3 bg-accent-light rounded">
-                    <div className="font-semibold">Pencarian Terpusat</div>
-                    <div className="text-sm text-slate-600 mt-1">Cari berdasarkan judul, deskripsi, lokasi.</div>
-                  </div>
-                  <div className="p-3 bg-accent-light rounded">
-                    <div className="font-semibold">Klaim & Verifikasi</div>
-                    <div className="text-sm text-slate-600 mt-1">Alur klaim dan notifikasi sederhana.</div>
-                  </div>
-                  <div className="p-3 bg-accent-light rounded">
-                    <div className="font-semibold">Aman & Terkelola</div>
-                    <div className="text-sm text-slate-600 mt-1">Data tersimpan dan mudah diaudit.</div>
-                  </div>
+                  <div className="mt-5 text-sm text-slate-500">Gratis, aman, dan terintegrasi dengan sistem kampus.</div>
                 </div>
-              </div>
-
-              <div className="bg-white rounded-lg p-4 border shadow-sm">
-                <h4 className="font-medium">Statistik Singkat</h4>
-                <div className="mt-3 grid grid-cols-3 gap-3 text-center">
-                  <div>
-                    <div className="text-2xl font-bold">{items.length}</div>
-                    <div className="text-xs text-slate-500">Total Laporan</div>
-                  </div>
-                  <div>
-                    <div className="text-2xl font-bold">{items.filter(i=>i.found).length}</div>
-                    <div className="text-xs text-slate-500">Barang Ditemukan</div>
-                  </div>
-                  <div>
-                    <div className="text-2xl font-bold">{items.filter(i=>i.claimed).length}</div>
-                    <div className="text-xs text-slate-500">Sudah Diklaim</div>
+                <div className="w-full md:w-1/3">
+                  <div className="bg-white rounded-lg shadow-md p-4 border">
+                    <div className="text-sm text-slate-500">Laporan terbaru</div>
+                    <ul className="mt-3 space-y-2 text-sm">
+                      {items.slice(0,3).map(it => (
+                        <li key={it.id} className="flex items-start gap-3">
+                          <div className="mt-1 w-3 h-3 rounded-full bg-amber-400"/> 
+                          <div className="flex-1 text-sm">{it.title} — <span className="text-slate-500">{it.location}</span></div>
+                        </li>
+                      ))}
+                      {items.length === 0 && <li className="text-slate-500">Belum ada laporan</li>}
+                    </ul>
+                    <div className="mt-4 text-xs text-slate-400">Lebih dari <strong>{items.length}</strong> laporan</div>
                   </div>
                 </div>
               </div>
             </div>
-                            <div className="mt-6 flex gap-3">
-                  <button onClick={() => setView('report')}
-                    className="px-5 py-3 bg-accent-dark text-white rounded-lg shadow-lg transform hover:-translate-y-0.5 transition">Laporkan Barang</button>
-                  <button onClick={() => setView('search')} className="px-5 py-3 border border-slate-200 rounded-lg">Cari Barang</button>
+
+            {/* Features + Stats */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="md:col-span-2 bg-white rounded-lg shadow p-6">
+                <h3 className="text-2xl font-semibold mb-5">Fitur Unggulan</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 gap-5">
+                  <div className="p-4 bg-amber-50 rounded-lg flex items-start gap-4 shadow-sm">
+                    <div className="w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center text-xl">📝</div>
+                    <div>
+                      <div className="font-semibold">Laporkan Cepat</div>
+                      <div className="text-sm text-slate-500">Form singkat untuk mencatat detail barang yang hilang atau ditemukan.</div>
+                    </div>
+                  </div>
+                  <div className="p-4 bg-amber-50 rounded-lg flex items-start gap-4 shadow-sm">
+                    <div className="w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center text-xl">🔎</div>
+                    <div>
+                      <div className="font-semibold">Pencarian Terpusat</div>
+                      <div className="text-sm text-slate-500">Cari berdasarkan judul, deskripsi, atau lokasi.</div>
+                    </div>
+                  </div>
+                  <div className="p-4 bg-amber-50 rounded-lg flex items-start gap-4 shadow-sm">
+                    <div className="w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center text-xl">🤝</div>
+                    <div>
+                      <div className="font-semibold">Klaim & Verifikasi</div>
+                      <div className="text-sm text-slate-500">Proses klaim yang jelas dan mudah diverifikasi.</div>
+                    </div>
+                  </div>
+                  <div className="p-4 bg-amber-50 rounded-lg flex items-start gap-4 shadow-sm">
+                    <div className="w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center text-xl">🔒</div>
+                    <div>
+                      <div className="font-semibold">Aman & Terkelola</div>
+                      <div className="text-sm text-slate-500">Data tersimpan dan mudah diaudit oleh pengelola kampus.</div>
+                    </div>
+                  </div>
                 </div>
+              </div>
+
+              <div className="bg-white rounded-lg shadow p-6 flex flex-col justify-between">
+                <div>
+                  <h4 className="text-lg font-medium mb-4">Statistik</h4>
+                  <div className="grid grid-cols-3 gap-4 text-center">
+                    <div>
+                      <div className="text-3xl md:text-4xl font-bold text-amber-600">{items.length}</div>
+                      <div className="text-xs text-slate-500 mt-2">Total Laporan</div>
+                    </div>
+                    <div>
+                      <div className="text-3xl md:text-4xl font-bold text-amber-600">{items.filter(i=>i.found).length}</div>
+                      <div className="text-xs text-slate-500 mt-2">Barang Ditemukan</div>
+                    </div>
+                    <div>
+                      <div className="text-3xl md:text-4xl font-bold text-amber-600">{items.filter(i=>i.claimed).length}</div>
+                      <div className="text-xs text-slate-500 mt-2">Sudah Diklaim</div>
+                    </div>
+                  </div>
+                </div>
+                <div className="mt-6 flex gap-3 justify-center md:justify-end">
+                  <button onClick={() => setView('report')} className="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded">Laporkan</button>
+                  <button onClick={() => setView('search')} className="px-4 py-2 border rounded">Cari</button>
+                </div>
+              </div>
+            </div>
           </section>
         )}
 
         {view === 'report' && (
           <section className="mt-6">
             <h2 className="text-2xl font-semibold mb-4">Laporkan Barang</h2>
-            <div className="bg-white rounded shadow p-6">
-              <ReportForm onSubmit={addItem} onCancel={() => setView('home')} />
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="md:col-span-2 bg-white rounded shadow p-6">
+                <ReportForm onSubmit={addItem} onCancel={() => setView('home')} />
+              </div>
+
+              <aside className="md:col-span-1">
+                <div className="bg-white rounded shadow p-6 space-y-4">
+                  <div className="text-sm text-slate-600">Tips Pengisian</div>
+                  <ul className="list-disc list-inside text-sm text-slate-700 space-y-2">
+                    <li>Isi judul singkat dan jelas (mis. "Dompet hitam").</li>
+                    <li>Berikan deskripsi yang detail dan akurat.</li>
+                    <li>Tambahkan lokasi terakhir atau tempat ditemukan.</li>
+                    <li>Unggah foto jika memungkinkan untuk mempercepat verifikasi.</li>
+                    <li>Berikan kontak yang mudah dihubungi.</li>
+                  </ul>
+
+                  <div className="pt-4">
+                    <div className="text-sm text-slate-600 mb-2">Laporan Terbaru</div>
+                    <div className="space-y-2 text-sm">
+                      {items.slice(0,5).map(it => (
+                        <div key={it.id} className="p-2 rounded border bg-slate-50">{it.title} <div className="text-xs text-slate-500">{it.location}</div></div>
+                      ))}
+                      {items.length === 0 && <div className="text-slate-500">Belum ada laporan</div>}
+                    </div>
+                  </div>
+                </div>
+              </aside>
             </div>
           </section>
         )}
