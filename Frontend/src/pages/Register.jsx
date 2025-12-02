@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import API from './api'
+import API from '../api'
 
 export default function Register({ onRegistered, onGotoLogin }) {
   const [name, setName] = useState('')

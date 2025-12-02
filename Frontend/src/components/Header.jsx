@@ -20,7 +20,7 @@ export default function Header({ view, setView, user, onLogout }) {
           <button onClick={() => setView('report')} className={`px-2 py-1 rounded ${view==='report' ? 'bg-accent-light text-accent-dark' : 'text-slate-700 hover:text-accent-dark'}`}>Laporkan</button>
           <button onClick={() => setView('how')} className={`px-2 py-1 rounded ${view==='how' ? 'bg-accent-light text-accent-dark' : 'text-slate-700 hover:text-accent-dark'}`}>Cara Kerja</button>
           <button onClick={() => setView('about')} className={`px-2 py-1 rounded ${view==='about' ? 'bg-accent-light text-accent-dark' : 'text-slate-700 hover:text-accent-dark'}`}>About</button>
-          <button onClick={() => setView('contact')} className="ml-4 px-3 py-2 rounded bg-accent-dark text-white hover:bg-accent transition">Hubungi</button>
+          <button onClick={() => setView('contact')} className={`px-2 py-1 rounded ${view==='contact' ? 'bg-accent-light text-accent-dark' : 'text-slate-700 hover:text-accent-dark'}`}>Hubungi</button>
           {user ? (
             <div className="flex items-center gap-3 ml-4">
               <div className="text-sm">Halo, <strong>{user.name || user.email}</strong></div>

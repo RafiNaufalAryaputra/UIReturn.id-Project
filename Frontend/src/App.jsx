@@ -1,13 +1,13 @@
 import './App.css'
 import { useState, useEffect } from 'react'
-import ReportForm from './ReportForm'
-import Search from './Search'
+import ReportForm from './pages/ReportForm'
+import Search from './pages/Search'
 import About from './pages/About'
 import HowItWorks from './pages/HowItWorks'
 import Contact from './pages/Contact'
 import Header from './components/Header'
-import Login from './Login'
-import Register from './Register'
+import Login from './pages/Login'
+import Register from './pages/Register'
 import Footer from './components/Footer'
 
 function App() {

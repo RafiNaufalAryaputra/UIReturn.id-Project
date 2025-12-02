@@ -1,7 +1,7 @@
 import { useState } from 'react'
-import ItemCard from './components/ItemCard'
-import ItemsTable from './components/ItemsTable'
-import ItemDrawer from './components/ItemDrawer'
+import ItemCard from '../components/ItemCard'
+import ItemsTable from '../components/ItemsTable'
+import ItemDrawer from '../components/ItemDrawer'
 
 export default function Search({ items, onClaim, onReport }) {
   const [q, setQ] = useState('')
