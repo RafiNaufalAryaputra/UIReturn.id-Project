@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 
 export default function Header({ view, setView, user, onLogout }) {
   const [open, setOpen] = useState(false)
@@ -56,6 +56,18 @@ export default function Header({ view, setView, user, onLogout }) {
     }
   }, [user, lastSeenUnread])
 
+  // close user menu when clicking outside
+  const [userMenuOpen, setUserMenuOpen] = useState(false)
+  const userMenuRef = useRef(null)
+  useEffect(() => {
+    function onDocClick(e) {
+      if (!userMenuRef.current) return
+      if (!userMenuRef.current.contains(e.target)) setUserMenuOpen(false)
+    }
+    if (userMenuOpen) document.addEventListener('mousedown', onDocClick)
+    return () => document.removeEventListener('mousedown', onDocClick)
+  }, [userMenuOpen])
+
   function navButton(label, v) {
     return (
       <button onClick={() => { setView(v); setOpen(false) }} className={`block w-full text-left px-3 py-2 rounded ${view===v ? 'bg-accent-light text-accent-dark' : 'text-slate-700 hover:text-accent-dark'}`}>{label}</button>
@@ -80,19 +92,30 @@ export default function Header({ view, setView, user, onLogout }) {
           <button onClick={() => setView('home')} className={`px-2 py-1 rounded ${view==='home' ? 'bg-accent-light text-accent-dark' : 'text-slate-700 hover:text-accent-dark'}`}>Home</button>
           <button onClick={() => setView('search')} className={`px-2 py-1 rounded ${view==='search' ? 'bg-accent-light text-accent-dark' : 'text-slate-700 hover:text-accent-dark'}`}>Cari</button>
           <button onClick={() => setView('report')} className={`px-2 py-1 rounded ${view==='report' ? 'bg-accent-light text-accent-dark' : 'text-slate-700 hover:text-accent-dark'}`}>Laporkan</button>
-          <button onClick={() => setView('how')} className={`px-2 py-1 rounded ${view==='how' ? 'bg-accent-light text-accent-dark' : 'text-slate-700 hover:text-accent-dark'}`}>Cara Kerja</button>
+          {/* Cara Kerja removed */}
           <button onClick={() => setView('about')} className={`px-2 py-1 rounded ${view==='about' ? 'bg-accent-light text-accent-dark' : 'text-slate-700 hover:text-accent-dark'}`}>About</button>
-          <button onClick={() => setView('messages')} className={`relative px-2 py-1 rounded ${view==='messages' ? 'bg-accent-light text-accent-dark' : 'text-slate-700 hover:text-accent-dark'}`}>
-            Pesan
-            {unread > 0 && (
-              <span className="absolute -top-2 -right-2 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white bg-red-600 rounded-full">{unread}</span>
-            )}
-          </button>
+          {/* "Pesan" removed - replaced by global chat widget */}
           <button onClick={() => setView('contact')} className={`px-2 py-1 rounded ${view==='contact' ? 'bg-accent-light text-accent-dark' : 'text-slate-700 hover:text-accent-dark'}`}>Hubungi</button>
           {user ? (
-            <div className="flex items-center gap-3 ml-4">
-              <div className="text-sm">Halo, <strong>{user.name || user.email}</strong></div>
-              <button onClick={() => { onLogout && onLogout() }} className="px-3 py-1 rounded border">Logout</button>
+            <div className="relative ml-4" ref={userMenuRef}>
+                <button onClick={() => setUserMenuOpen(v => !v)} className="flex items-center gap-3 px-3 py-1 rounded hover:bg-slate-50">
+                  <div className="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center text-sm text-slate-700">{(user && (user.avatar ? '' : (user.name || user.email || 'U').slice(0,1).toUpperCase()))}</div>
+                  <div className="text-sm">Halo, <strong>{user.name || user.email}</strong></div>
+                  <svg className="w-4 h-4 text-slate-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={userMenuOpen ? 'M6 18L18 6M6 6l12 12' : 'M19 9l-7 7-7-7'} />
+                  </svg>
+                </button>
+
+              {userMenuOpen && (
+                <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5">
+                  <div className="py-1">
+                    <button onClick={() => { setUserMenuOpen(false); window.dispatchEvent(new CustomEvent('openChat')) }} className="w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-slate-100">Open Chat</button>
+                    <button onClick={() => { setUserMenuOpen(false); setView('profile') }} className="w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-slate-100">Profile</button>
+                    <div className="border-t my-1" />
+                    <button onClick={() => { setUserMenuOpen(false); onLogout && onLogout() }} className="w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-slate-100">Logout</button>
+                  </div>
+                </div>
+              )}
             </div>
           ) : (
             <button onClick={() => setView('login')} className="ml-4 px-3 py-2 rounded bg-accent-dark text-white hover:bg-accent transition">Masuk</button>
@@ -118,7 +141,7 @@ export default function Header({ view, setView, user, onLogout }) {
               {navButton('Home','home')}
               {navButton('Cari','search')}
               {navButton('Laporkan','report')}
-              {navButton('Cara Kerja','how')}
+              {/* Cara Kerja removed */}
               {navButton('About','about')}
               {navButton('Hubungi','contact')}
               <div className="border-t my-2" />

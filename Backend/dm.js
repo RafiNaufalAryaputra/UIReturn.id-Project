@@ -1,10 +1,25 @@
 import express from 'express'
 import { nanoid } from 'nanoid'
+import multer from 'multer'
+import path from 'path'
+import fs from 'fs'
 import mongo from './mongo.js'
 import { authMiddleware } from './auth.js'
 
 const router = express.Router()
 const MESSAGES = 'dm_messages'
+
+// multer storage for attachments
+const uploadsDir = path.join(process.cwd(), 'uploads')
+try { fs.mkdirSync(uploadsDir, { recursive: true }) } catch (e) {}
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) { cb(null, uploadsDir) },
+  filename: function (req, file, cb) {
+    const ext = path.extname(file.originalname)
+    cb(null, `${Date.now()}-${nanoid()}${ext}`)
+  }
+})
+const upload = multer({ storage, limits: { fileSize: 5 * 1024 * 1024 } })
 
 // GET /api/dm/conversations  -> list conversations for current user
 router.get('/conversations', authMiddleware, async (req, res) => {
@@ -59,16 +74,32 @@ router.get('/:otherId/messages', authMiddleware, async (req, res) => {
   }
 })
 
-// POST /api/dm/:otherId/messages { body }
-router.post('/:otherId/messages', authMiddleware, async (req, res) => {
+// POST /api/dm/:otherId/messages { body } OR multipart/form-data with optional file field 'file'
+router.post('/:otherId/messages', authMiddleware, upload.single('file'), async (req, res) => {
   try {
     const userId = req.user && req.user.id
     const otherId = req.params.otherId
     const { body } = req.body || {}
     if (!userId) return res.status(401).json({ error: 'unauthorized' })
-    if (!body || !body.trim()) return res.status(400).json({ error: 'body required' })
+    if ((!body || !body.trim()) && !req.file) return res.status(400).json({ error: 'body or file required' })
     const col = await mongo.getCollection(MESSAGES)
-    const msg = { id: nanoid(), senderId: userId, receiverId: otherId, senderName: req.user && (req.user.name || req.user.email) || 'Unknown', body: body.trim(), createdAt: new Date().toISOString(), read: false }
+    const msg = {
+      id: nanoid(),
+      senderId: userId,
+      receiverId: otherId,
+      senderName: req.user && (req.user.name || req.user.email) || 'Unknown',
+      body: body ? body.trim() : '',
+      createdAt: new Date().toISOString(),
+      read: false
+    }
+    if (req.file) {
+      msg.attachment = {
+        url: `/uploads/${req.file.filename}`,
+        originalName: req.file.originalname,
+        mimetype: req.file.mimetype,
+        size: req.file.size
+      }
+    }
     await col.insertOne(msg)
     return res.status(201).json(msg)
   } catch (err) {

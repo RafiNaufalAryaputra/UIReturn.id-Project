@@ -3,13 +3,14 @@ import { useState, useEffect } from 'react'
 import ReportForm from './pages/ReportForm'
 import Search from './pages/Search'
 import About from './pages/About'
-import HowItWorks from './pages/HowItWorks'
 import Contact from './pages/Contact'
 import Header from './components/Header'
+import ChatWidget from './components/ChatWidget'
 import Login from './pages/Login'
 import Register from './pages/Register'
 import Footer from './components/Footer'
 import Messages from './pages/Messages'
+import Profile from './pages/Profile'
 
 function App() {
   const [view, setView] = useState('home') // home | report | search | about | how | contact
@@ -382,11 +383,13 @@ function App() {
           </section>
         )}
 
-        {view === 'how' && (
+        {view === 'profile' && (
           <section className="mt-6">
-            <HowItWorks />
+            <Profile user={user} setUser={setUser} />
           </section>
         )}
+
+        {/* 'Cara Kerja' page removed */}
 
         {view === 'contact' && (
           <section className="mt-6">
@@ -396,6 +399,9 @@ function App() {
       </main>
 
       <Footer />
+
+      {/* Global chat widget (floating) */}
+      <ChatWidget user={user} />
 
       {/* toast */}
       <div aria-live="polite" className="pointer-events-none fixed inset-0 flex items-start px-4 py-6 sm:items-start sm:p-6 z-50">

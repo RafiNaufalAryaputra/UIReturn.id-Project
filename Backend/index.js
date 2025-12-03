@@ -13,6 +13,9 @@ const app = express()
 app.use(cors())
 app.use(express.json({ limit: '5mb' }))
 
+// serve uploads (attachments)
+app.use('/uploads', express.static('uploads'))
+
 app.use('/api/items', itemsRouter)
 app.use('/api/users', usersRouter)
 app.use('/api', messagesRouter)
