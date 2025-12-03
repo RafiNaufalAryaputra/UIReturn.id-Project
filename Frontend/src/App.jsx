@@ -9,6 +9,7 @@ import Header from './components/Header'
 import Login from './pages/Login'
 import Register from './pages/Register'
 import Footer from './components/Footer'
+import Messages from './pages/Messages'
 
 function App() {
   const [view, setView] = useState('home') // home | report | search | about | how | contact
@@ -121,9 +122,14 @@ function App() {
     ;(async () => {
       // try to POST to backend; if it fails, fall back to local-only
       try {
+        const headers = { 'Content-Type': 'application/json' }
+        // attach token when reporting lost (backend enforces auth for lost)
+        const token = localStorage.getItem('token')
+        if (token && item.found === 'lost') headers.Authorization = `Bearer ${token}`
+
         const res = await fetch(`${API}/api/items`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers,
           body: JSON.stringify({
             title: item.title,
             description: item.description,
@@ -163,22 +169,48 @@ function App() {
   function claimItem(id, claimer) {
     ;(async () => {
       try {
+        const token = localStorage.getItem('token')
+        if (!token) throw new Error('not authenticated')
         const res = await fetch(`${API}/api/items/${id}/claim`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ claimer })
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }
         })
         if (res.ok) {
           const updated = await res.json()
           setItems(prev => prev.map(it => (it.id === updated.id ? updated : it)))
-          showToast('Klaim diterima — terima kasih')
+          showToast('Klaim diajukan — menunggu verifikasi admin')
           return
         }
         throw new Error('server claim failed')
       } catch (err) {
-        // fallback: update locally
-        setItems(prev => prev.map(it => (it.id === id ? { ...it, claimed: true, claimer } : it)))
+        // fallback: mark pending locally (use user name if available)
+        const localClaimer = (user && (user.name || user.email)) || claimer || 'Unknown'
+        setItems(prev => prev.map(it => (it.id === id ? { ...it, claimStatus: 'pending', claimer: localClaimer } : it)))
         showToast('Klaim dicatat secara lokal (server tak tersedia)')
+      }
+    })()
+  }
+
+  // resolve claim (admin)
+  function resolveClaim(id, action) {
+    ;(async () => {
+      try {
+        const token = localStorage.getItem('token')
+        const res = await fetch(`${API}/api/items/${id}/claim/resolve`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+          body: JSON.stringify({ action })
+        })
+        if (res.ok) {
+          const updated = await res.json()
+          setItems(prev => prev.map(it => (it.id === updated.id ? updated : it)))
+          showToast(`Claim ${action}ed`)
+          return
+        }
+        throw new Error('resolve failed')
+      } catch (err) {
+        console.error('resolveClaim error', err)
+        showToast('Gagal menyelesaikan klaim')
       }
     })()
   }
@@ -288,7 +320,7 @@ function App() {
             <h2 className="text-2xl font-semibold mb-4">Laporkan Barang</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="md:col-span-2 bg-white rounded shadow p-6">
-                <ReportForm onSubmit={addItem} onCancel={() => setView('home')} />
+                <ReportForm onSubmit={addItem} onCancel={() => setView('home')} user={user} />
               </div>
 
               <aside className="md:col-span-1">
@@ -321,7 +353,7 @@ function App() {
           <section className="mt-6">
             <h2 className="text-2xl font-semibold mb-4">Cari Barang</h2>
             <div className="bg-white rounded shadow p-6">
-              <Search items={items} onClaim={claimItem} onReport={() => setView('report')} />
+              <Search items={items} onClaim={claimItem} onReport={() => setView('report')} user={user} onResolveClaim={resolveClaim} onOpenMessages={(otherId) => { localStorage.setItem('open_dm_with', otherId); setView('messages') }} />
             </div>
           </section>
         )}
@@ -341,6 +373,12 @@ function App() {
         {view === 'about' && (
           <section className="mt-6">
             <About />
+          </section>
+        )}
+
+        {view === 'messages' && (
+          <section className="mt-6">
+            <Messages user={user} />
           </section>
         )}
 

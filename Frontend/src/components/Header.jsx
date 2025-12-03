@@ -1,7 +1,60 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 
 export default function Header({ view, setView, user, onLogout }) {
   const [open, setOpen] = useState(false)
+  const [unread, setUnread] = useState(0)
+  const [lastSeenUnread, setLastSeenUnread] = useState(0)
+
+  useEffect(() => {
+    let mounted = true
+    let intervalId = null
+
+    async function fetchUnread() {
+      try {
+        const token = localStorage.getItem('token')
+        if (!token) {
+          if (mounted) setUnread(0)
+          return
+        }
+        const res = await fetch('/api/dm/unread-count', {
+          headers: { Authorization: `Bearer ${token}` }
+        })
+        if (!res.ok) return
+        const data = await res.json()
+        const count = data.unread || 0
+        if (mounted) {
+          // show browser notification when unread increases
+          if (count > lastSeenUnread) {
+            if (window.Notification && Notification.permission === 'granted') {
+              try {
+                new Notification('UIReturn.id', { body: `Anda memiliki ${count} pesan belum dibaca` })
+              } catch (e) {
+                // ignore notification errors
+              }
+            }
+          }
+          setUnread(count)
+          setLastSeenUnread(count)
+        }
+      } catch (e) {
+        // ignore network errors
+      }
+    }
+
+    // request permission when a user is present
+    if (user && window.Notification && Notification.permission === 'default') {
+      try { Notification.requestPermission() } catch (e) { }
+    }
+
+    // initial fetch and then poll
+    fetchUnread()
+    intervalId = setInterval(fetchUnread, 15000)
+
+    return () => {
+      mounted = false
+      if (intervalId) clearInterval(intervalId)
+    }
+  }, [user, lastSeenUnread])
 
   function navButton(label, v) {
     return (
@@ -29,6 +82,12 @@ export default function Header({ view, setView, user, onLogout }) {
           <button onClick={() => setView('report')} className={`px-2 py-1 rounded ${view==='report' ? 'bg-accent-light text-accent-dark' : 'text-slate-700 hover:text-accent-dark'}`}>Laporkan</button>
           <button onClick={() => setView('how')} className={`px-2 py-1 rounded ${view==='how' ? 'bg-accent-light text-accent-dark' : 'text-slate-700 hover:text-accent-dark'}`}>Cara Kerja</button>
           <button onClick={() => setView('about')} className={`px-2 py-1 rounded ${view==='about' ? 'bg-accent-light text-accent-dark' : 'text-slate-700 hover:text-accent-dark'}`}>About</button>
+          <button onClick={() => setView('messages')} className={`relative px-2 py-1 rounded ${view==='messages' ? 'bg-accent-light text-accent-dark' : 'text-slate-700 hover:text-accent-dark'}`}>
+            Pesan
+            {unread > 0 && (
+              <span className="absolute -top-2 -right-2 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white bg-red-600 rounded-full">{unread}</span>
+            )}
+          </button>
           <button onClick={() => setView('contact')} className={`px-2 py-1 rounded ${view==='contact' ? 'bg-accent-light text-accent-dark' : 'text-slate-700 hover:text-accent-dark'}`}>Hubungi</button>
           {user ? (
             <div className="flex items-center gap-3 ml-4">

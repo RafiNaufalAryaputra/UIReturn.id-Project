@@ -8,7 +8,7 @@ function Badge({ found }) {
   )
 }
 
-export default function ItemsTable({ items, onClaimClick, onRowClick }) {
+export default function ItemsTable({ items, onClaimClick, onRowClick, user, onResolveClaim }) {
   return (
     <div className="bg-white border rounded-lg overflow-hidden">
       <table className="w-full text-sm table-auto">
@@ -40,10 +40,21 @@ export default function ItemsTable({ items, onClaimClick, onRowClick }) {
                 {it.imageData ? <img src={it.imageData} alt={it.title} className="w-9 h-9 object-cover rounded" /> : <div className="w-9 h-9 bg-slate-100 rounded flex items-center justify-center text-slate-400">—</div>}
               </td>
               <td className="px-3 py-2 align-top text-right">
-                {!it.claimed ? (
-                  <button onClick={(e) => { e.stopPropagation(); onClaimClick && onClaimClick(it) }} className="px-3 py-1 bg-amber-500 text-white rounded text-sm">Klaim</button>
+                {it.claimStatus === 'pending' ? (
+                  user && user.isAdmin ? (
+                    <div className="flex gap-2 justify-end">
+                      <button onClick={(e) => { e.stopPropagation(); onResolveClaim && onResolveClaim(it.id, 'approve') }} className="px-2 py-1 bg-emerald-600 text-white rounded text-sm">Approve</button>
+                      <button onClick={(e) => { e.stopPropagation(); onResolveClaim && onResolveClaim(it.id, 'reject') }} className="px-2 py-1 bg-rose-600 text-white rounded text-sm">Reject</button>
+                    </div>
+                  ) : (
+                    <span className="text-sm text-amber-600">Pending</span>
+                  )
                 ) : (
-                  <span className="text-xs text-slate-500">Telah Diklaim</span>
+                  !it.claimed ? (
+                    <button onClick={(e) => { e.stopPropagation(); onClaimClick && onClaimClick(it) }} className="px-3 py-1 bg-amber-500 text-white rounded text-sm">Klaim</button>
+                  ) : (
+                    <span className="text-xs text-slate-500">Telah Diklaim</span>
+                  )
                 )}
               </td>
             </tr>

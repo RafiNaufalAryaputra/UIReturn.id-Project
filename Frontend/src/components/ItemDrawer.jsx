@@ -1,6 +1,7 @@
 import { useState } from 'react'
+import ChatThread from './ChatThread'
 
-export default function ItemDrawer({ item, onClose, onClaim }) {
+export default function ItemDrawer({ item, onClose, onClaim, user, onResolveClaim }) {
   const [zoom, setZoom] = useState(false)
   if (!item) return null
 
@@ -37,6 +38,15 @@ export default function ItemDrawer({ item, onClose, onClaim }) {
             <div className="mt-2">{item.contact || '-'}</div>
           </div>
 
+          {item.reportedBy && (
+            <div>
+              <div className="text-xs text-slate-500">Pelapor</div>
+              <div className="mt-2">
+                <button onClick={() => { onOpenMessages && onOpenMessages(item.reportedBy); onClose && onClose() }} className="text-sm text-accent-dark hover:underline">{item.reporterName || item.reportedBy}</button>
+              </div>
+            </div>
+          )}
+
           <div>
             <div className="text-xs text-slate-500">Image of Item</div>
             <div className="mt-2">
@@ -48,13 +58,27 @@ export default function ItemDrawer({ item, onClose, onClaim }) {
             </div>
           </div>
 
-          <div className="pt-4">
+          <div className="pt-4 flex items-center gap-3">
             {!item.claimed ? (
-              <button onClick={() => onClaim && onClaim(item)} className="px-4 py-2 bg-amber-500 text-white rounded">Klaim</button>
+              item.claimStatus === 'pending' ? (
+                user && user.isAdmin ? (
+                  <>
+                    <button onClick={() => onResolveClaim && onResolveClaim(item.id, 'approve')} className="px-4 py-2 bg-emerald-600 text-white rounded">Approve</button>
+                    <button onClick={() => onResolveClaim && onResolveClaim(item.id, 'reject')} className="px-4 py-2 bg-rose-600 text-white rounded">Reject</button>
+                  </>
+                ) : (
+                  <div className="text-sm text-amber-600">Klaim: Pending</div>
+                )
+              ) : (
+                <button onClick={() => onClaim && onClaim(item)} className="px-4 py-2 bg-amber-500 text-white rounded">Klaim</button>
+              )
             ) : (
               <div className="text-sm text-emerald-700">Diklaim oleh: {item.claimer || '—'}</div>
             )}
           </div>
+
+          {/* Chat thread */}
+          <ChatThread itemId={item.id} user={user} />
         </div>
       </aside>
 

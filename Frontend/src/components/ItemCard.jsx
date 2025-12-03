@@ -1,4 +1,4 @@
-export default function ItemCard({ item, onClaimClick, onViewClick }) {
+export default function ItemCard({ item, onClaimClick, onViewClick, user, onResolveClaim }) {
   return (
     <div onClick={() => onViewClick && onViewClick(item)} className="flex flex-col sm:flex-row items-start justify-between p-4 bg-white border border-gray-100 rounded-xl shadow-sm hover:shadow-md transition-transform transform hover:-translate-y-1 cursor-pointer">
       <div className="flex gap-4 w-full">
@@ -14,6 +14,7 @@ export default function ItemCard({ item, onClaimClick, onViewClick }) {
           <div className="flex items-center gap-3">
             <h3 className="text-lg font-semibold text-slate-900">{item.title}</h3>
             <span className={`text-xs px-2 py-0.5 rounded-full ${item.found ? 'bg-amber-100 text-amber-800' : 'bg-slate-100 text-slate-600'}`}>{item.found ? 'Ditemukan' : 'Hilang'}</span>
+            {item.claimStatus === 'pending' && <span className="ml-2 text-xs px-2 py-0.5 rounded bg-amber-100 text-amber-800">Pending</span>}
             {item.claimed && <span className="ml-2 text-xs px-2 py-0.5 rounded bg-emerald-100 text-emerald-700">Sudah Diklaim</span>}
           </div>
 
@@ -30,12 +31,24 @@ export default function ItemCard({ item, onClaimClick, onViewClick }) {
 
       <div className="w-full sm:w-auto flex-shrink-0 flex flex-col gap-2 items-end mt-4 sm:mt-0">
         {!item.claimed ? (
-          <button
-            className="px-4 py-2 bg-accent-dark text-white rounded-lg shadow-md hover:brightness-95 transition"
-            onClick={(e) => { e.stopPropagation(); onClaimClick && onClaimClick(item) }}
-          >
-            Klaim
-          </button>
+          item.claimStatus === 'pending' ? (
+            user && user.isAdmin ? (
+              <div className="flex gap-2">
+                <button onClick={(e) => { e.stopPropagation(); onResolveClaim && onResolveClaim(item.id, 'approve') }} className="px-3 py-1 bg-emerald-600 text-white rounded">Approve</button>
+                <button onClick={(e) => { e.stopPropagation(); onResolveClaim && onResolveClaim(item.id, 'reject') }} className="px-3 py-1 bg-rose-600 text-white rounded">Reject</button>
+              </div>
+            ) : (
+              <button className="px-4 py-2 bg-slate-200 text-slate-600 rounded-lg" disabled>Pending</button>
+            )
+          ) : (
+            <button
+              className="px-4 py-2 bg-accent-dark text-white rounded-lg shadow-md hover:brightness-95 transition"
+              onClick={(e) => { e.stopPropagation(); onClaimClick && onClaimClick(item) }}
+              disabled={item.claimStatus === 'pending'}
+            >
+              {item.claimStatus === 'pending' ? 'Pending' : 'Klaim'}
+            </button>
+          )
         ) : (
           <button className="px-3 py-1 border rounded bg-white text-slate-500" disabled>Telah Diklaim</button>
         )}

@@ -1,6 +1,12 @@
 import express from 'express'
 import { nanoid } from 'nanoid'
 import mongo from './mongo.js'
+import { authMiddleware, requireAdmin } from './auth.js'
+import dotenv from 'dotenv'
+import jwt from 'jsonwebtoken'
+
+dotenv.config()
+const JWT_SECRET = process.env.JWT_SECRET || 'please-change-me'
 
 // collection name
 const COLL = 'items'
@@ -55,6 +61,22 @@ router.post('/', async (req, res) => {
   try {
     const { title, description = '', location = '', contact = '', found = false, imageData = null } = req.body
     if (!title) return res.status(400).json({ error: 'title required' })
+    // if reporting a lost item (found === false) require authentication
+    let reportedBy = null
+    let reporterName = null
+    if (!found) {
+      const header = req.headers.authorization
+      const token = header && header.split(' ')[1]
+      if (!token) return res.status(401).json({ error: 'authentication required for lost reports' })
+      try {
+        const payload = jwt.verify(token, JWT_SECRET)
+        reportedBy = payload.id
+        reporterName = payload.name || payload.email
+      } catch (err) {
+        return res.status(401).json({ error: 'invalid token' })
+      }
+    }
+
     const item = {
       id: nanoid(),
       title,
@@ -64,8 +86,15 @@ router.post('/', async (req, res) => {
       found: !!found,
       imageData: imageData || null,
       createdAt: new Date().toISOString(),
+      // claim fields
       claimed: false,
-      claimer: null
+      claimer: null,
+      claimerId: null,
+      claimerName: null,
+      claimStatus: 'none', // 'none' | 'pending' | 'approved' | 'rejected'
+      // reporter metadata (if authenticated)
+      reportedBy,
+      reporterName
     }
 
     let col
@@ -78,22 +107,52 @@ router.post('/', async (req, res) => {
   }
 })
 
-// POST /api/items/:id/claim  { claimer }
-router.post('/:id/claim', async (req, res) => {
+// POST /api/items/:id/claim  -> creates pending claim (requires authentication)
+router.post('/:id/claim', authMiddleware, async (req, res) => {
   try {
-    const { claimer } = req.body
-    if (!claimer) return res.status(400).json({ error: 'claimer required' })
+    // derive claimer from authenticated user
+    const user = req.user
+    if (!user) return res.status(401).json({ error: 'unauthorized' })
+
     let col
     try { col = await mongo.getCollection(COLL) } catch (e) { return res.status(503).json({ error: 'database unavailable' }) }
+
+    const claimerName = user.name || user.email || user.id
+    const claimerId = user.id
     const r = await col.findOneAndUpdate(
       { id: req.params.id },
-      { $set: { claimed: true, claimer } },
+      { $set: { claimStatus: 'pending', claimer: claimerName, claimerId, claimerName } },
       { returnDocument: 'after' }
     )
     if (!r.value) return res.status(404).json({ error: 'Not found' })
     return res.json(r.value)
   } catch (err) {
     console.error('POST /api/items/:id/claim error', err)
+    res.status(500).json({ error: 'internal' })
+  }
+})
+
+// PATCH /api/items/:id/claim/resolve { action: 'approve'|'reject' }  (admin only)
+router.patch('/:id/claim/resolve', authMiddleware, requireAdmin, async (req, res) => {
+  try {
+    const { action } = req.body
+    if (!['approve', 'reject'].includes(action)) return res.status(400).json({ error: 'invalid action' })
+    let col
+    try { col = await mongo.getCollection(COLL) } catch (e) { return res.status(503).json({ error: 'database unavailable' }) }
+
+    const update = action === 'approve'
+      ? { $set: { claimStatus: 'approved', claimed: true } }
+      : { $set: { claimStatus: 'rejected' } }
+
+    const r = await col.findOneAndUpdate(
+      { id: req.params.id },
+      update,
+      { returnDocument: 'after' }
+    )
+    if (!r.value) return res.status(404).json({ error: 'Not found' })
+    return res.json(r.value)
+  } catch (err) {
+    console.error('PATCH /api/items/:id/claim/resolve error', err)
     res.status(500).json({ error: 'internal' })
   }
 })

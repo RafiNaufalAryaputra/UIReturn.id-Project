@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react'
 
-export default function ReportForm({ onSubmit, onCancel }) {
+export default function ReportForm({ onSubmit, onCancel, user }) {
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [location, setLocation] = useState('')
@@ -11,6 +11,8 @@ export default function ReportForm({ onSubmit, onCancel }) {
   function handleSubmit(e) {
     e.preventDefault()
     if (!title.trim()) return alert('Judul wajib diisi')
+    // require login for lost reports
+    if (found === 'lost' && !user) return alert('Silakan login atau registrasi terlebih dahulu untuk melaporkan kehilangan.')
     onSubmit({ title, description, location, contact, found, imageData })
     // reset
     setTitle('')
@@ -59,9 +61,14 @@ export default function ReportForm({ onSubmit, onCancel }) {
         <DropzoneImage setImageData={setImageData} imageData={imageData} />
       </label>
 
+      {/* Inform user if they must login for lost reports */}
+      {found === 'lost' && !user && (
+        <div className="p-3 bg-amber-50 border-l-4 border-amber-400 text-amber-800 rounded">Untuk melaporkan kehilangan, Anda harus masuk (login) terlebih dahulu.</div>
+      )}
+
       <div className="flex items-center gap-3 justify-end pt-4">
         <button type="button" onClick={onCancel} className="px-4 py-2 rounded-md text-sm bg-gray-100 hover:bg-gray-200">Batal</button>
-        <button type="submit" className="px-4 py-2 rounded-md bg-amber-500 text-white hover:bg-amber-600">Kirim Laporan</button>
+        <button type="submit" className="px-4 py-2 rounded-md bg-amber-500 text-white hover:bg-amber-600" disabled={found === 'lost' && !user}>Kirim Laporan</button>
       </div>
 
     </form>

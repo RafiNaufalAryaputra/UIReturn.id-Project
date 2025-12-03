@@ -3,7 +3,7 @@ import ItemCard from '../components/ItemCard'
 import ItemsTable from '../components/ItemsTable'
 import ItemDrawer from '../components/ItemDrawer'
 
-export default function Search({ items, onClaim, onReport }) {
+export default function Search({ items, onClaim, onReport, user, onResolveClaim, onOpenMessages }) {
   const [q, setQ] = useState('')
   const [filter, setFilter] = useState('all') // all | lost | found | claimed
   const [sort, setSort] = useState('newest') // newest | oldest
@@ -31,7 +31,7 @@ export default function Search({ items, onClaim, onReport }) {
 
   function openClaim(item) {
     setSelected(item)
-    setClaimer('')
+    setClaimer(user && (user.name || user.email) ? (user.name || user.email) : '')
   }
 
   const [step, setStep] = useState(1) // 1: form, 2: review, 3: done
@@ -42,6 +42,8 @@ export default function Search({ items, onClaim, onReport }) {
 
   function submitClaim() {
     if (!selected) return
+    // require login
+    if (!user) return alert('Silakan login untuk mengajukan klaim')
     if (!claimer.trim()) return alert('Masukkan nama atau kontak untuk klaim')
     if (!agree) return alert('Harap setujui pernyataan bahwa Anda membawa identitas saat pengambilan')
     // move to review step
@@ -52,7 +54,7 @@ export default function Search({ items, onClaim, onReport }) {
     if (!selected) return
     setSubmitting(true)
     try {
-      await onClaim(selected.id, claimer.trim())
+      await onClaim(selected.id)
       setStep(3)
       // keep modal open to show instructions; auto-close after short delay
       setTimeout(() => {
@@ -106,7 +108,7 @@ export default function Search({ items, onClaim, onReport }) {
         {filtered.length === 0 ? (
           <div className="p-6 text-center text-slate-600 bg-white rounded shadow">Tidak ada hasil. Coba kata kunci lain atau buat laporan.</div>
         ) : (
-          <ItemsTable items={filtered} onClaimClick={openClaim} onRowClick={setDetailItem} />
+          <ItemsTable items={filtered} onClaimClick={openClaim} onRowClick={setDetailItem} user={user} onResolveClaim={onResolveClaim} />
         )}
       </div>
 
@@ -116,12 +118,12 @@ export default function Search({ items, onClaim, onReport }) {
           <div className="p-6 text-center text-slate-600 bg-white rounded shadow col-span-full">Tidak ada hasil. Coba kata kunci lain atau buat laporan.</div>
         )}
         {filtered.map(item => (
-          <ItemCard key={item.id} item={item} onClaimClick={openClaim} onViewClick={setDetailItem} />
+          <ItemCard key={item.id} item={item} onClaimClick={openClaim} onViewClick={setDetailItem} user={user} onResolveClaim={onResolveClaim} />
         ))}
       </div>
 
       {detailItem && (
-        <ItemDrawer item={detailItem} onClose={() => setDetailItem(null)} onClaim={(it) => { setDetailItem(null); openClaim(it) }} />
+        <ItemDrawer item={detailItem} onClose={() => setDetailItem(null)} onClaim={(it) => { setDetailItem(null); openClaim(it) }} user={user} onResolveClaim={onResolveClaim} onOpenMessages={onOpenMessages} />
       )}
 
       {/* Claim modal */}
