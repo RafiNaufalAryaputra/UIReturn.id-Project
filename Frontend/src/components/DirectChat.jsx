@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 
-export default function DirectChat({ otherId, user }) {
+export default function DirectChat({ otherId, user, initialText }) {
+  const [otherName, setOtherName] = useState(null)
   const [messages, setMessages] = useState([])
   const [text, setText] = useState('')
   const [file, setFile] = useState(null)
@@ -13,10 +14,28 @@ export default function DirectChat({ otherId, user }) {
   useEffect(() => {
     mounted.current = true
     if (!otherId) return
+    // fetch other user's display name
+    (async function(){
+      try {
+        const token = localStorage.getItem('token')
+        const res = await fetch(`${API}/api/users/${otherId}`, { headers: { Authorization: token ? `Bearer ${token}` : '' } })
+        if (res.ok) {
+          const d = await res.json()
+          if (mounted.current) setOtherName(d.name || d.email || otherId)
+        } else {
+          if (mounted.current) setOtherName(otherId)
+        }
+      } catch (e) { if (mounted.current) setOtherName(otherId) }
+    })()
     fetchMessages()
     pollRef.current = setInterval(fetchMessages, 3000)
     return () => { mounted.current = false; clearInterval(pollRef.current) }
   }, [otherId])
+
+  // set initial text when opened from item (only if input currently empty)
+  useEffect(() => {
+    if (initialText && !text) setText(initialText)
+  }, [initialText])
 
   async function fetchMessages() {
     try {
@@ -83,7 +102,7 @@ export default function DirectChat({ otherId, user }) {
 
   return (
     <div>
-      <div className="text-sm text-slate-600 mb-3">Chat with {otherId}</div>
+      <div className="text-sm text-slate-600 mb-3">Chat with {otherName || otherId}</div>
       <div className="bg-slate-50 p-3 rounded max-h-64 overflow-auto">
         {messages.length === 0 ? (
           <div className="text-xs text-slate-500">Belum ada pesan</div>

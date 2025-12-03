@@ -51,7 +51,18 @@ export default function ItemsTable({ items, onClaimClick, onRowClick, user, onRe
                   )
                 ) : (
                   !it.claimed ? (
-                    <button onClick={(e) => { e.stopPropagation(); onClaimClick && onClaimClick(it) }} className="px-3 py-1 bg-amber-500 text-white rounded text-sm">Klaim</button>
+                    <div className="flex items-center justify-end gap-2">
+                      <button onClick={(e) => { e.stopPropagation(); onClaimClick && onClaimClick(it) }} className="px-3 py-1 bg-amber-500 text-white rounded text-sm">Klaim</button>
+                      <button onClick={(e) => {
+                        e.stopPropagation();
+                        if (it.reportedBy) {
+                          const initial = `Halo, saya tertarik dengan laporan Anda: "${it.title}" (ID ${it.id}). Apakah barang masih tersedia?`;
+                          window.dispatchEvent(new CustomEvent('openChat', { detail: { otherId: it.reportedBy, initialMessage: initial } }));
+                        } else {
+                          alert('Pelapor tidak tersedia')
+                        }
+                      }} className="px-2 py-1 border rounded bg-white text-slate-700 text-sm">Chat</button>
+                    </div>
                   ) : (
                     <span className="text-xs text-slate-500">Telah Diklaim</span>
                   )

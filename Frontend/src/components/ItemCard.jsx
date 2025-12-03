@@ -53,6 +53,16 @@ export default function ItemCard({ item, onClaimClick, onViewClick, user, onReso
           <button className="px-3 py-1 border rounded bg-white text-slate-500" disabled>Telah Diklaim</button>
         )}
 
+        <button onClick={(e) => {
+          e.stopPropagation();
+          if (item.reportedBy) {
+            const initial = `Halo, saya tertarik dengan laporan Anda: "${item.title}" (ID ${item.id}). Apakah barang masih tersedia?`;
+            window.dispatchEvent(new CustomEvent('openChat', { detail: { otherId: item.reportedBy, initialMessage: initial } }));
+          } else {
+            alert('Pelapor tidak tersedia')
+          }
+        }} className="mt-2 px-3 py-1 text-sm border rounded bg-white hover:bg-slate-50">Chat Pelapor</button>
+
         <div className="text-xs text-slate-400">ID: {item.id}</div>
       </div>
     </div>
